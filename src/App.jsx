@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/dashboard";
-import WeatherApp from "./pages/Landing-page";
+import WeatherApp from "./pages/Landingpage";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
