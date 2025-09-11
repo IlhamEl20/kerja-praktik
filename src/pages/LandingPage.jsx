@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 
 const weatherIcons = {
@@ -37,16 +38,8 @@ export default function WeatherApp() {
         try {
           const [weatherRes, geoRes] = await Promise.all([
             axios.get("/api/weather", {
-              params: {
-                latitude: lat,
-                longitude: lon,
-                current_weather: true,
-                daily: "temperature_2m_max,temperature_2m_min,weathercode",
-                timezone: "auto",
-                temperature_unit: "celsius",
-              },
+              params: { latitude: lat, longitude: lon },
             }),
-
             axios.get("https://nominatim.openstreetmap.org/reverse", {
               params: { lat, lon, format: "json" },
             }),

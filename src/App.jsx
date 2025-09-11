@@ -2,11 +2,12 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/dashboard";
-import WeatherApp from "./pages/Landingpage";
+import TodoApp from "./pages/todolist";
+import WeatherApp from "./pages/LandingPage";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  return isAuthenticated ? children : <Navigate to="/" />;
 }
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<WeatherApp />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/todos" element={<TodoApp />} />
       <Route
         path="/dashboard"
         element={
