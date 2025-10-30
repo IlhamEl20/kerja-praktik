@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import formbricks from "@formbricks/js";
+// import formbricks from "@formbricks/js";
 
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/dashboard";
@@ -9,19 +9,21 @@ import WeatherApp from "./pages/LandingPage";
 import Photobooth from "./components/camera";
 import FormbricksInitializer from "./pages/formbrick";
 import EmbedFormbrick from "./pages/embed-formbrick";
+import PdfToolkit from "./pages/ilovepdf";
+import PdfMerge from "./pages/PdfMerge";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   return isAuthenticated ? children : <Navigate to="/" />;
 }
-const environmentId = import.meta.env.VITE_FORMBRICKS_ENVIRONMENT_ID;
-const apiHost = import.meta.env.VITE_FORMBRICKS_API_HOST;
-if (typeof window !== "undefined") {
-  formbricks.setup({
-    environmentId: environmentId,
-    appUrl: apiHost,
-  });
-}
+// const environmentId = import.meta.env.VITE_FORMBRICKS_ENVIRONMENT_ID;
+// const apiHost = import.meta.env.VITE_FORMBRICKS_API_HOST;
+// if (typeof window !== "undefined") {
+//   formbricks.setup({
+//     environmentId: environmentId,
+//     appUrl: apiHost,
+//   });
+// }
 export default function App() {
   // useEffect(() => {
   //   async function initFormbricks() {
@@ -57,6 +59,8 @@ export default function App() {
       <Route path="*" element={<Navigate to="/login" />} />
       <Route path="/formbrick" element={<FormbricksInitializer />} />
       <Route path="/embed-formbrick" element={<EmbedFormbrick />} />
+      <Route path="/ilove-pdf" element={<PdfToolkit />} />
+      <Route path="/ilove-pdf/merge" element={<PdfMerge />} />
     </Routes>
   );
 }
