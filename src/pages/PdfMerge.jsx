@@ -99,26 +99,41 @@ export default function PdfMerge() {
   };
 
   const handleMerge = async () => {
-    if (files.length < 2) return;
-    const formData = new FormData();
-    files.forEach((file) => formData.append("files", file));
-
-    const response = await fetch("/api/pdf/merge", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      alert("❌ Gagal menggabungkan PDF");
+    if (files.length < 2) {
+      alert("Minimal 2 file PDF diperlukan untuk penggabungan");
       return;
     }
 
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "merged.pdf";
-    link.click();
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file); // harus "files" sesuai backend Fiber
+    });
+
+    try {
+      const response = await fetch("/api/pdf/merge", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || "Gagal menggabungkan PDF");
+      }
+
+      // ✅ Jika backend mengirim langsung file hasil merge (Content-Type: application/pdf)
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "merged.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert("❌ Gagal menggabungkan PDF: " + err.message);
+    }
   };
 
   const handleDragEnd = (event) => {
