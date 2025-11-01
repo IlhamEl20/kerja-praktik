@@ -1,11 +1,10 @@
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "@tailwindcss/vite";
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(() => {
   // load .env file sesuai mode (development / production)
   // eslint-disable-next-line no-undef
-  const env = loadEnv(mode, process.cwd(), "");
 
   return {
     plugins: [react(), tailwindcss()],
@@ -19,7 +18,9 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      __API_URL__: JSON.stringify(env.VITE_API_URL),
+      "process.env": {
+        VITE_API_URL: "https://services-api.ilhamboy.site",
+      },
     },
   };
 });
