@@ -9,12 +9,12 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-
-// ✅ Worker PDF.js untuk Vite
+import { Button, notification, Spin } from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min?url";
+
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
-// ✅ Sortable item (card preview)
 function SortableItem({ id, file, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -30,7 +30,6 @@ function SortableItem({ id, file, onRemove }) {
       style={style}
       className="relative bg-white shadow-md rounded-xl flex flex-col border hover:shadow-lg transition"
     >
-      {/* 🔹 Header card di luar area drag */}
       <div className="flex justify-end items-center px-2 pt-2 pb-1 border-b">
         <button
           onClick={(e) => {
@@ -44,7 +43,6 @@ function SortableItem({ id, file, onRemove }) {
         </button>
       </div>
 
-      {/* 🔹 Area drag (bawah header) */}
       <div
         {...attributes}
         {...listeners}
@@ -74,6 +72,7 @@ function SortableItem({ id, file, onRemove }) {
 export default function PdfMerge() {
   const [files, setFiles] = useState([]);
   const [dragging, setDragging] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const onDrop = useCallback((acceptedFiles) => {
     const pdfs = acceptedFiles.filter(
@@ -100,14 +99,18 @@ export default function PdfMerge() {
 
   const handleMerge = async () => {
     if (files.length < 2) {
-      alert("Minimal 2 file PDF diperlukan untuk penggabungan");
+      notification.warning({
+        message: "Minimal 2 File Diperlukan",
+        description: "Tambahkan minimal 2 file PDF untuk digabungkan.",
+        placement: "topRight",
+      });
       return;
     }
 
+    setLoading(true);
+
     const formData = new FormData();
-    files.forEach((file) => {
-      formData.append("files", file); // harus "files" sesuai backend Fiber
-    });
+    files.forEach((file) => formData.append("files", file));
 
     try {
       const response = await fetch("/api/pdf/merge", {
@@ -120,19 +123,34 @@ export default function PdfMerge() {
         throw new Error(err.message || "Gagal menggabungkan PDF");
       }
 
-      // ✅ Jika backend mengirim langsung file hasil merge (Content-Type: application/pdf)
       const blob = await response.blob();
+
+      const firstFile = files[0].name.replace(/\.pdf$/i, "");
+      const mergedFileName = `${firstFile}_merge.pdf`;
+
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "merged.pdf";
+      link.download = mergedFileName;
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+
+      notification.success({
+        message: "Berhasil Digabung!",
+        description: `File hasil: ${mergedFileName}`,
+        placement: "topRight",
+      });
     } catch (err) {
       console.error(err);
-      alert("❌ Gagal menggabungkan PDF: " + err.message);
+      notification.error({
+        message: "Gagal Menggabungkan PDF",
+        description: err.message,
+        placement: "topRight",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -146,8 +164,32 @@ export default function PdfMerge() {
     }
   };
 
+  const loadingIcon = <LoadingOutlined style={{ fontSize: 48 }} spin />;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 flex flex-col items-center p-8">
+    <div className="relative min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 flex flex-col items-center p-8">
+      {/* 🔹 Overlay Loading */}
+      {loading && (
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+          <Spin
+            indicator={loadingIcon}
+            tip="Menggabungkan PDF..."
+            size="large"
+          />
+          <p className="mt-4 text-white text-lg animate-pulse">
+            Mohon tunggu sebentar...
+          </p>
+        </div>
+      )}
+
+      {/* 🟢 Pengumuman */}
+      <div className="bg-green-100 border border-green-300 text-green-800 px-6 py-3 rounded-xl shadow-sm mb-6 text-center max-w-2xl animate-fade-in">
+        <p className="font-semibold">
+          💚 100% Aman — Data Anda tidak disimpan.
+        </p>
+        <p className="text-sm mt-1">Setiap 1 kali merge = 1 amal 🌱</p>
+      </div>
+
       <h1 className="text-3xl font-bold mb-6 text-gray-700">Merge PDF Files</h1>
 
       {/* 🔹 Drag & Drop Area */}
@@ -167,13 +209,9 @@ export default function PdfMerge() {
             ? "Lepaskan file PDF di sini..."
             : "Tarik & jatuhkan file PDF di sini"}
         </p>
-        <button
-          onClick={openFileDialog}
-          type="button"
-          className="mt-4 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-        >
+        <Button onClick={openFileDialog} type="primary" className="mt-4">
           Pilih File
-        </button>
+        </Button>
       </div>
 
       {/* 🔹 Preview */}
@@ -203,17 +241,15 @@ export default function PdfMerge() {
       )}
 
       {/* 🔹 Tombol Merge */}
-      <button
+      <Button
         onClick={handleMerge}
         disabled={files.length < 2}
-        className={`mt-10 px-8 py-3 rounded-lg text-white font-semibold transition-all ${
-          files.length < 2
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-green-600 hover:bg-green-700"
-        }`}
+        type="primary"
+        size="large"
+        className="mt-8"
       >
         Merge PDFs ({files.length}/2)
-      </button>
+      </Button>
     </div>
   );
 }

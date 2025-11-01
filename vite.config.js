@@ -1,16 +1,25 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "@tailwindcss/vite";
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  server: {
-    proxy: {
-      "/api": {
-        target: "http://192.168.100.117:6000", // alamat backend Go kamu
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+
+export default defineConfig(({ mode }) => {
+  // load .env file sesuai mode (development / production)
+  // eslint-disable-next-line no-undef
+  const env = loadEnv(mode, process.cwd(), "");
+
+  return {
+    plugins: [react(), tailwindcss()],
+    server: {
+      proxy: {
+        "/api": {
+          target: env.VITE_API_URL,
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ""),
+        },
       },
     },
-  },
+    define: {
+      __API_URL__: JSON.stringify(env.VITE_API_URL),
+    },
+  };
 });

@@ -60,7 +60,7 @@ export default function App() {
       <Route path="/formbrick" element={<FormbricksInitializer />} />
       <Route path="/embed-formbrick" element={<EmbedFormbrick />} />
       <Route path="/ilove-pdf" element={<PdfToolkit />} />
-      <Route path="/ilove-pdf/merge" element={<PdfMerge />} />
+      <Route path="/pdf" element={<PdfMerge />} />
     </Routes>
   );
 }
