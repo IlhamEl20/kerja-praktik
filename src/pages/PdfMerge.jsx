@@ -113,10 +113,13 @@ export default function PdfMerge() {
     files.forEach((file) => formData.append("files", file));
 
     try {
-      const response = await fetch("/api/pdf/merge", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "https://services-api.ilhamboy.site/pdf/merge",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));

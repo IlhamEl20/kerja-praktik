@@ -4,7 +4,6 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig(() => {
   // load .env file sesuai mode (development / production)
-  // eslint-disable-next-line no-undef
 
   return {
     plugins: [react(), tailwindcss()],
