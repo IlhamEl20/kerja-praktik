@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         "/api": {
-          target: env.VITE_API_URL,
+          target: "https://services-api.ilhamboy.site",
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ""),
         },
