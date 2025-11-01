@@ -11,6 +11,7 @@ import FormbricksInitializer from "./pages/formbrick";
 import EmbedFormbrick from "./pages/embed-formbrick";
 import PdfToolkit from "./pages/ilovepdf";
 import PdfMerge from "./pages/PdfMerge";
+import Home from "./pages/HomePage";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -44,8 +45,9 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<WeatherApp />} />
-      <Route path="/Photobooth" element={<Photobooth />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/weather" element={<WeatherApp />} />
+      <Route path="/photobooth" element={<Photobooth />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/todos" element={<TodoApp />} />
       <Route
