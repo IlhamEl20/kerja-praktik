@@ -12,6 +12,7 @@ import EmbedFormbrick from "./pages/embed-formbrick";
 import PdfToolkit from "./pages/ilovepdf";
 import PdfMerge from "./pages/PdfMerge";
 import Home from "./pages/HomePage";
+import AzanReminderUI from "./pages/azan/AzanReminderUI";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -63,6 +64,7 @@ export default function App() {
       <Route path="/embed-formbrick" element={<EmbedFormbrick />} />
       <Route path="/ilove-pdf" element={<PdfToolkit />} />
       <Route path="/pdf" element={<PdfMerge />} />
+      <Route path="/azan-reminder" element={<AzanReminderUI />} />
     </Routes>
   );
 }

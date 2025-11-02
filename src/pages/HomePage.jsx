@@ -6,6 +6,7 @@ import {
   CameraOutlined,
   CheckSquareOutlined,
   CloudOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
@@ -36,6 +37,12 @@ const features = [
       "Cek cuaca terkini di daerahmu, lengkap dengan animasi interaktif.",
     icon: <CloudOutlined className="text-4xl text-blue-500" />,
     link: "/weather",
+  },
+  {
+    title: "Jadwal Sholat",
+    description: "Lihat waktu azan di lokasimu secara real-time.",
+    icon: <ClockCircleOutlined className="text-4xl text-amber-500" />,
+    link: "/azan-reminder",
   },
 ];
 
