@@ -1,169 +1,300 @@
 import React, { useState, useEffect } from "react";
-import { DeleteOutlined, CheckOutlined, RedoOutlined } from "@ant-design/icons";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
-import { Plus, Trash2, Edit, Calendar } from "lucide-react";
-import { Button, Tag } from "antd";
+import {
+  CalendarOutlined,
+  AppstoreOutlined,
+  PlusOutlined,
+  CheckOutlined,
+  RedoOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
+import {
+  Button,
+  Card,
+  Input,
+  Select,
+  DatePicker,
+  Calendar,
+  Modal,
+  Tag,
+  Switch,
+  Tooltip,
+  Space,
+  Divider,
+} from "antd";
+import dayjs from "dayjs";
+import "dayjs/locale/id";
+
+dayjs.locale("id");
+const { TextArea } = Input;
 
 export default function TodoApp() {
   const [todos, setTodos] = useState([]);
   const [input, setInput] = useState("");
-  const [status] = useState("ingin dikerjakan");
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("biasa");
+  const [date, setDate] = useState(dayjs());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState("card"); // "card" | "calendar"
 
   // Load dari localStorage
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("todos_v2")) || [];
+    const stored = JSON.parse(localStorage.getItem("todos_v5")) || [];
     setTodos(stored);
   }, []);
 
   // Simpan ke localStorage
   useEffect(() => {
-    localStorage.setItem("todos_v2", JSON.stringify(todos));
+    localStorage.setItem("todos_v5", JSON.stringify(todos));
   }, [todos]);
 
   const addTodo = () => {
     if (!input.trim()) return;
     const newTodo = {
       id: Date.now(),
-      text: input,
-      status,
-      date: new Date().toISOString().split("T")[0], // YYYY-MM-DD
+      text: input.trim(),
+      title: title.trim(),
+      status: "ongoing",
+      category,
+      date: date.format("YYYY-MM-DD"),
     };
     setTodos([...todos, newTodo]);
     setInput("");
+    setTitle("");
   };
 
   const toggleStatus = (id) => {
     setTodos(
-      todos.map((todo) =>
-        todo.id === id
+      todos.map((t) =>
+        t.id === id
           ? {
-              ...todo,
-              status:
-                todo.status === "selesai" ? "ingin dikerjakan" : "selesai",
+              ...t,
+              status: t.status === "ongoing" ? "selesai" : "ongoing",
             }
-          : todo
+          : t
       )
     );
   };
 
   const deleteTodo = (id) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+    setTodos(todos.filter((t) => t.id !== id));
   };
 
-  // Group todos berdasarkan tanggal
-  const groupedTodos = todos.reduce((acc, todo) => {
-    if (!acc[todo.date]) acc[todo.date] = [];
+  const todosByDate = todos.reduce((acc, todo) => {
+    acc[todo.date] = acc[todo.date] || [];
     acc[todo.date].push(todo);
     return acc;
   }, {});
 
+  const handleDateSelect = (value) => {
+    const formatted = value.format("YYYY-MM-DD");
+    setSelectedDate(formatted);
+    setModalOpen(true);
+  };
+
+  const filteredTodos = selectedDate ? todosByDate[selectedDate] || [] : [];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 p-6 flex flex-col items-center">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 p-6">
       <motion.div
-        className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 mb-6"
+        className="bg-white rounded-2xl shadow-lg p-6 max-w-4xl mx-auto mb-8"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-2xl font-bold mb-4 text-indigo-700">Tambah Todo</h1>
-        <div className="flex gap-2">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className="flex-1 px-4 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-indigo-950 text-black"
-            placeholder="Apa yang ingin kamu kerjakan?"
-          />
-          <Button
-            onClick={addTodo}
-            type="primary"
-            size="large"
-            className="bg-indigo-600 text-white px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-indigo-700"
-          >
-            <Plus size={18} /> Tambah
-          </Button>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-indigo-700 flex items-center gap-2">
+            <CalendarOutlined /> Tambah Kegiatan
+          </h2>
+
+          <Tooltip title="Ganti tampilan Kalender / Kartu">
+            <Switch
+              checkedChildren={<CalendarOutlined />}
+              unCheckedChildren={<AppstoreOutlined />}
+              checked={viewMode === "calendar"}
+              onChange={(checked) => setViewMode(checked ? "calendar" : "card")}
+            />
+          </Tooltip>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col md:flex-row gap-2">
+            <Input
+              placeholder="Judul kegiatan (opsional)"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="flex-1"
+            />
+            <TextArea
+              rows={2}
+              placeholder="Tulis kegiatanmu..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="flex-1"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Select
+              value={category}
+              onChange={setCategory}
+              className="w-36"
+              options={[
+                { value: "biasa", label: "Biasa" },
+                { value: "urgent", label: "Urgent" },
+              ]}
+            />
+            <DatePicker
+              value={date}
+              onChange={(d) => setDate(d)}
+              format="DD MMM YYYY"
+              className="w-44"
+            />
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={addTodo}
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
+              Tambah
+            </Button>
+          </div>
         </div>
       </motion.div>
-
-      <div className="w-full max-w-lg space-y-6">
-        {Object.keys(groupedTodos).map((date) => (
-          <div key={date} className="bg-white rounded-2xl shadow p-4">
-            {/* Divider dengan tanggal */}
-            <div className="flex items-center gap-2 border-b pb-2 mb-3 text-indigo-600 font-semibold">
-              <Calendar size={18} />
-              {new Date(date).toLocaleDateString("id-ID", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </div>
-
-            {groupedTodos[date].map((todo) => (
-              <motion.div
+      {/* MAIN VIEW */}
+      {viewMode === "calendar" ? (
+        <motion.div
+          className="max-w-4xl mx-auto mb-8 bg-white rounded-2xl shadow-lg p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <Calendar fullscreen={false} onSelect={handleDateSelect} />
+        </motion.div>
+      ) : (
+        <motion.div
+          className="max-w-5xl mx-auto grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          {todos.length ? (
+            todos.map((todo) => (
+              <Card
                 key={todo.id}
-                className="flex justify-between items-start p-3 rounded-lg mb-2 bg-indigo-50"
-                whileHover={{ scale: 1.02 }}
-              >
-                {/* Left Content */}
-                <div className="flex flex-col flex-1 pr-4">
-                  <p
-                    className={`font-stretch-100% whitespace-pre-wrap break-all ${
-                      todo.status === "selesai"
-                        ? "line-through text-gray-500"
-                        : "text-gray-800"
-                    }`}
-                  >
-                    {todo.text}
-                  </p>
+                className="rounded-2xl shadow-md border border-indigo-100 hover:shadow-lg transition-all"
+                title={
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-indigo-700">
+                      {dayjs(todo.date).format("DD MMM YYYY")}
+                    </span>
 
-                  {/* Divider tipis */}
-                  <div className="h-px bg-gray-200 my-2" />
-
-                  {/* Status Legend */}
-                  <Tag
-                    color={
-                      todo.status === "selesai"
-                        ? "green"
-                        : todo.status === "sedang dikerjakan"
-                        ? "gold"
-                        : "blue"
-                    }
-                    className="w-fit text-sm font-medium"
-                  >
-                    {todo.status}
-                  </Tag>
-                </div>
-
-                {/* Right Actions */}
-                {/* Right Actions */}
-                <div className="flex gap-2 items-start shrink-0">
+                    <Space>
+                      <Tag
+                        color={
+                          todo.category === "urgent"
+                            ? "red"
+                            : todo.category === "biasa"
+                            ? "blue"
+                            : "default"
+                        }
+                      >
+                        {todo.category.toUpperCase()}
+                      </Tag>
+                      <Tag
+                        color={todo.status === "selesai" ? "green" : "orange"}
+                      >
+                        {todo.status === "selesai" ? "SELESAI" : "ONGOING"}
+                      </Tag>
+                    </Space>
+                  </div>
+                }
+                actions={[
+                  todo.status === "selesai" ? (
+                    <RedoOutlined
+                      key="redo"
+                      onClick={() => toggleStatus(todo.id)}
+                    />
+                  ) : (
+                    <CheckOutlined
+                      key="check"
+                      onClick={() => toggleStatus(todo.id)}
+                    />
+                  ),
                   <Button
-                    type={todo.status === "selesai" ? "default" : "primary"}
-                    danger={false}
-                    icon={
-                      todo.status === "selesai" ? (
-                        <RedoOutlined />
-                      ) : (
-                        <CheckOutlined />
-                      )
-                    }
-                    onClick={() => toggleStatus(todo.id)}
-                  >
-                    {todo.status === "selesai" ? "Ulangi" : "Selesai"}
-                  </Button>
-
-                  <Button
+                    key="delete"
                     danger
-                    type="primary"
                     icon={<DeleteOutlined />}
                     onClick={() => deleteTodo(todo.id)}
-                  />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        ))}
-      </div>
+                  >
+                    Hapus
+                  </Button>,
+                ]}
+              >
+                <motion.p
+                  className="text-gray-800 text-base font-medium leading-snug"
+                  whileHover={{ scale: 1.02 }}
+                >
+                  {todo.title && (
+                    <strong className="block mb-1">{todo.title}</strong>
+                  )}
+                  {todo.text}
+                </motion.p>
+              </Card>
+            ))
+          ) : (
+            <div className="text-center text-gray-500 col-span-3">
+              Belum ada kegiatan.
+            </div>
+          )}
+        </motion.div>
+      )}
+      {/* Modal Detail Hari */}
+      <Modal
+        title={`Detail Kegiatan (${dayjs(selectedDate).format(
+          "DD MMMM YYYY"
+        )})`}
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        footer={null}
+      >
+        {filteredTodos.length ? (
+          filteredTodos.map((t) => (
+            <Card
+              key={t.id}
+              className="mb-3"
+              size="small"
+              title={t.title || "Kegiatan"}
+              extra={
+                <Space>
+                  <Tag color={t.category === "urgent" ? "red" : "blue"}>
+                    {t.category}
+                  </Tag>
+                  <Tag color={t.status === "selesai" ? "green" : "orange"}>
+                    {t.status === "selesai" ? "Selesai" : "Ongoing"}
+                  </Tag>
+                </Space>
+              }
+            >
+              <div className="flex justify-between items-center">{t.text}</div>
+              <Divider />
+              <div className="flex justify-between items-center">
+                <Button
+                  size="small"
+                  type="link"
+                  onClick={() => toggleStatus(t.id)}
+                >
+                  {t.status === "selesai" ? "Ulangi" : "Tandai Selesai"}
+                </Button>
+                <Button size="small" danger onClick={() => deleteTodo(t.id)}>
+                  Hapus
+                </Button>
+              </div>
+            </Card>
+          ))
+        ) : (
+          <p>Tidak ada kegiatan di tanggal ini.</p>
+        )}
+      </Modal>
     </div>
   );
 }
