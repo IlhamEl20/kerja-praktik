@@ -8,6 +8,7 @@ export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
     server: {
+      host: true,
       proxy: {
         "/api": {
           target: "https://services-api.ilhamboy.site",
