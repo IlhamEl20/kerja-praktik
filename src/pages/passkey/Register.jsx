@@ -23,7 +23,10 @@ export default function RegisterForm() {
       const attResp = await startRegistration(options.publicKey || options);
       console.log("Attestation response:", attResp);
 
-      await AxiosInstance.post("/register/finish", attResp);
+      await AxiosInstance.post(
+        `/register/finish?username=${username}`,
+        attResp
+      );
 
       message.success("✅ Registered successfully!");
       setUsername("");

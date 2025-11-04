@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { startAuthentication } from "@simplewebauthn/browser";
-import { Card, Input, Button, message } from "antd";
+import { Card, Input, Button, message, Typography } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import AxiosInstance from "../../api/axios-instance";
+
+const { Text } = Typography;
 
 export default function LoginPasskey() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
 
   const handleLogin = async () => {
     if (!username) {
@@ -15,15 +18,26 @@ export default function LoginPasskey() {
     }
 
     setLoading(true);
+    setResult(null); // reset tampilan hasil sebelumnya
+
     try {
+      // 1️⃣ Dapatkan challenge dari server
       const { data: options } = await AxiosInstance.post("/login/begin", {
         username,
       });
-      const asseResp = await startAuthentication(options.publicKey || options);
-      const { data } = await AxiosInstance.post("/login/finish", asseResp);
 
+      // 2️⃣ Jalankan WebAuthn di browser
+      const asseResp = await startAuthentication(options.publicKey || options);
+
+      // 3️⃣ Kirim hasil autentikasi ke server untuk diverifikasi
+      const { data } = await AxiosInstance.post(
+        `/login/finish?username=${username}`,
+        asseResp
+      );
+
+      // 4️⃣ Tampilkan hasil sukses di UI
+      setResult(data);
       message.success("✅ Login successful!");
-      console.log("Login result:", data);
     } catch (err) {
       console.error("Login error:", err);
       message.error("❌ Login failed, check console for details.");
@@ -62,6 +76,15 @@ export default function LoginPasskey() {
           >
             Login
           </Button>
+
+          {result && (
+            <div className="mt-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <Text strong>Status:</Text>{" "}
+              <Text type="success">{result.status}</Text>
+              <br />
+              <Text strong>User:</Text> <Text code>{result.user}</Text>
+            </div>
+          )}
         </div>
       </Card>
     </div>
