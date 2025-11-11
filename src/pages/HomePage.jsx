@@ -15,22 +15,28 @@ const { Title, Text } = Typography;
 
 const features = [
   {
+    title: "Jadwal Sholat",
+    description: "Lihat waktu azan di lokasimu secara real-time.",
+    icon: <ClockCircleOutlined className="text-4xl text-amber-500" />,
+    link: "/azan-reminder",
+  },
+  {
     title: "PDF Tools",
     description: "Gabungkan, pisahkan, atau ubah file PDF dengan cepat.",
     icon: <FilePdfOutlined className="text-4xl text-red-500" />,
     link: "/pdf",
   },
   {
-    title: "Photo Booth",
-    description: "Ambil foto seru dengan efek menarik langsung dari browser!",
-    icon: <CameraOutlined className="text-4xl text-pink-500" />,
-    link: "/photobooth",
-  },
-  {
     title: "Todos App",
     description: "Kelola kegiatan harianmu dengan mudah dan efisien.",
     icon: <CheckSquareOutlined className="text-4xl text-green-500" />,
     link: "/todos",
+  },
+  {
+    title: "Passkey Auth",
+    description: "Masuk ke aplikasi dengan metode autentikasi modern.",
+    icon: <LockOutlined className="text-4xl text-purple-500" />,
+    link: "/passkey",
   },
   {
     title: "Weather App",
@@ -40,16 +46,10 @@ const features = [
     link: "/weather",
   },
   {
-    title: "Jadwal Sholat",
-    description: "Lihat waktu azan di lokasimu secara real-time.",
-    icon: <ClockCircleOutlined className="text-4xl text-amber-500" />,
-    link: "/azan-reminder",
-  },
-  {
-    title: "Passkey Auth",
-    description: "Masuk ke aplikasi dengan metode autentikasi modern.",
-    icon: <LockOutlined className="text-4xl text-purple-500" />,
-    link: "/passkey",
+    title: "Photo Booth",
+    description: "Ambil foto seru dengan efek menarik langsung dari browser!",
+    icon: <CameraOutlined className="text-4xl text-pink-500" />,
+    link: "/photobooth",
   },
 ];
 

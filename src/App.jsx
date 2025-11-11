@@ -5,15 +5,14 @@ import { useSelector } from "react-redux";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/dashboard";
 import TodoApp from "./pages/todolist";
-import WeatherApp from "./pages/LandingPage";
 import Photobooth from "./components/camera";
 import FormbricksInitializer from "./pages/formbrick";
 import EmbedFormbrick from "./pages/embed-formbrick";
-import PdfToolkit from "./pages/ilovepdf";
-import PdfMerge from "./pages/PdfMerge";
 import Home from "./pages/HomePage";
 import AzanReminderUI from "./pages/azan/AzanReminderUI";
 import HomePasskey from "./pages/passkey/home";
+import PdfToolsContainer from "./pages/pdf/PdfToolsContainer";
+import WeatherApp from "./pages/WeatherPage";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -63,8 +62,7 @@ export default function App() {
       <Route path="*" element={<Navigate to="/login" />} />
       <Route path="/formbrick" element={<FormbricksInitializer />} />
       <Route path="/embed-formbrick" element={<EmbedFormbrick />} />
-      <Route path="/ilove-pdf" element={<PdfToolkit />} />
-      <Route path="/pdf" element={<PdfMerge />} />
+      <Route path="/pdf" element={<PdfToolsContainer />} />
       <Route path="/azan-reminder" element={<AzanReminderUI />} />
       <Route path="/passkey" element={<HomePasskey />} />
     </Routes>

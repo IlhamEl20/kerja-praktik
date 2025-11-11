@@ -1,6 +1,5 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-import { useDropzone } from "react-dropzone";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -9,20 +8,33 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Button, notification, Spin } from "antd";
-import { LoadingOutlined } from "@ant-design/icons";
+import {
+  Upload,
+  Button,
+  Spin,
+  notification,
+  Modal,
+  Progress,
+  Typography,
+} from "antd";
+import {
+  InboxOutlined,
+  LoadingOutlined,
+  FilePdfOutlined,
+} from "@ant-design/icons";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min?url";
+import AxiosInstance from "../../api/axios-instance";
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+
+const { Dragger } = Upload;
+const { Title } = Typography;
 
 function SortableItem({ id, file, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  const style = { transform: CSS.Transform.toString(transform), transition };
 
   return (
     <div
@@ -53,7 +65,6 @@ function SortableItem({ id, file, onRemove }) {
             file={file}
             loading={<p className="text-sm text-gray-400">Loading...</p>}
             error={<p className="text-sm text-red-400">Failed to load</p>}
-            className="pointer-events-none"
           >
             <Page
               pageNumber={1}
@@ -71,27 +82,21 @@ function SortableItem({ id, file, onRemove }) {
 
 export default function PdfMerge() {
   const [files, setFiles] = useState([]);
-  const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
 
-  const onDrop = useCallback((acceptedFiles) => {
-    const pdfs = acceptedFiles.filter(
-      (file) => file.type === "application/pdf"
-    );
-    setFiles((prev) => [...prev, ...pdfs]);
-    setDragging(false);
-  }, []);
-
-  const {
-    getRootProps,
-    getInputProps,
-    isDragActive,
-    open: openFileDialog,
-  } = useDropzone({
-    onDrop,
-    accept: { "application/pdf": [".pdf"] },
-    noClick: true,
-  });
+  const handleBeforeUpload = (file) => {
+    if (!file.name.endsWith(".pdf")) {
+      notification.error({
+        message: "❌ Hanya file PDF yang diperbolehkan",
+        placement: "topRight",
+      });
+      return Upload.LIST_IGNORE;
+    }
+    setFiles((prev) => [...prev, file]);
+    return false;
+  };
 
   const handleRemove = (fileToRemove) => {
     setFiles((prev) => prev.filter((f) => f !== fileToRemove));
@@ -107,53 +112,64 @@ export default function PdfMerge() {
       return;
     }
 
-    setLoading(true);
-
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
 
-    try {
-      const response = await fetch(
-        "https://services-api.ilhamboy.site/pdf/merge",
-        {
-          method: "POST",
-          body: formData,
+    // Mulai proses + tampilkan modal progress
+    setLoading(true);
+    setProgress(0);
+    setTimeLeft(8); // estimasi waktu 8 detik
+
+    // simulasi animasi progress
+    const timer = setInterval(() => {
+      setProgress((old) => {
+        if (old >= 100) return 100;
+        return old + 100 / 8; // 8 detik -> 100%
+      });
+    }, 1000);
+
+    const countdown = setInterval(() => {
+      setTimeLeft((old) => {
+        if (old <= 1) {
+          clearInterval(countdown);
+          return 0;
         }
-      );
+        return old - 1;
+      });
+    }, 1000);
 
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.message || "Gagal menggabungkan PDF");
-      }
+    try {
+      const res = await AxiosInstance.post("/pdf/merge", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        responseType: "blob",
+      });
 
-      const blob = await response.blob();
-
-      const firstFile = files[0].name.replace(/\.pdf$/i, "");
-      const mergedFileName = `${firstFile}_merge.pdf`;
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const mergedName = `${files[0].name.replace(/\.pdf$/, "")}_merged.pdf`;
 
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = mergedFileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = mergedName;
+      a.click();
       window.URL.revokeObjectURL(url);
 
       notification.success({
-        message: "Berhasil Digabung!",
-        description: `File hasil: ${mergedFileName}`,
+        message: "✅ Berhasil Digabung!",
+        description: `File hasil: ${mergedName}`,
         placement: "topRight",
       });
     } catch (err) {
-      console.error(err);
       notification.error({
-        message: "Gagal Menggabungkan PDF",
+        message: "❌ Gagal Menggabungkan",
         description: err.message,
         placement: "topRight",
       });
     } finally {
-      setLoading(false);
+      setFiles([]);
+      clearInterval(timer);
+      setProgress(100);
+      setTimeout(() => setLoading(false), 1200);
     }
   };
 
@@ -167,55 +183,48 @@ export default function PdfMerge() {
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
   const loadingIcon = <LoadingOutlined style={{ fontSize: 48 }} spin />;
 
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 flex flex-col items-center p-8">
-      {/* 🔹 Overlay Loading */}
-      {loading && (
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center z-50">
-          <Spin
-            indicator={loadingIcon}
-            tip="Menggabungkan PDF..."
-            size="large"
-          />
-          <p className="mt-4 text-white text-lg animate-pulse">
-            Mohon tunggu sebentar...
+      {/* 🔹 Modal Progress */}
+      <Modal open={loading} closable={false} footer={null} centered width={400}>
+        <div className="text-center py-6">
+          <FilePdfOutlined style={{ fontSize: 48, color: "#1677ff" }} />
+          <Title level={4} className="mt-3 mb-1">
+            Menggabungkan File PDF
+          </Title>
+          <p className="text-gray-600 mb-4">
+            Proses akan selesai dalam sekitar <strong>{timeLeft}s</strong>
           </p>
+          <Progress
+            percent={Math.round(progress)}
+            status="active"
+            strokeColor={{ from: "#1677ff", to: "#52c41a" }}
+          />
         </div>
-      )}
+      </Modal>
 
-      {/* 🟢 Pengumuman */}
-      <div className="bg-green-100 border border-green-300 text-green-800 px-6 py-3 rounded-xl shadow-sm mb-6 text-center max-w-2xl animate-fade-in">
-        <p className="font-semibold">
-          💚 100% Aman — Data Anda tidak disimpan.
-        </p>
-        <p className="text-sm mt-1">Setiap 1 kali merge = 1 amal 🌱</p>
-      </div>
-
-      <h1 className="text-3xl font-bold mb-6 text-gray-700">Merge PDF Files</h1>
-
-      {/* 🔹 Drag & Drop Area */}
-      <div
-        {...getRootProps()}
-        onDragEnter={() => setDragging(true)}
-        onDragLeave={() => setDragging(false)}
-        className={`w-full max-w-3xl border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 ${
-          isDragActive || dragging
-            ? "border-blue-500 bg-blue-50 scale-105"
-            : "border-gray-400 bg-white"
-        }`}
+      {/* 🔹 Upload */}
+      <Dragger
+        multiple
+        showUploadList={false}
+        beforeUpload={handleBeforeUpload}
+        accept="application/pdf"
+        disabled={loading}
+        className="w-full max-w-3xl border-dashed border-gray-400 hover:border-blue-500 bg-white hover:bg-blue-50 rounded-2xl p-12 transition-all duration-300 shadow-sm"
       >
-        <input {...getInputProps()} />
-        <p className="text-gray-600 text-lg">
-          {isDragActive || dragging
-            ? "Lepaskan file PDF di sini..."
-            : "Tarik & jatuhkan file PDF di sini"}
+        <p className="ant-upload-drag-icon">
+          <InboxOutlined style={{ color: "#1677ff", fontSize: "32px" }} />
         </p>
-        <Button onClick={openFileDialog} type="primary" className="mt-4">
-          Pilih File
-        </Button>
-      </div>
+        <p className="ant-upload-text text-gray-700 text-lg">
+          Tarik & jatuhkan file PDF di sini
+        </p>
+        <p className="ant-upload-hint text-gray-500 text-sm mb-4">
+          atau klik tombol di bawah untuk memilih file
+        </p>
+      </Dragger>
 
       {/* 🔹 Preview */}
       {files.length > 0 && (
@@ -246,7 +255,7 @@ export default function PdfMerge() {
       {/* 🔹 Tombol Merge */}
       <Button
         onClick={handleMerge}
-        disabled={files.length < 2}
+        disabled={files.length < 2 || loading}
         type="primary"
         size="large"
         className="mt-8"
