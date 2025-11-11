@@ -7,6 +7,7 @@ import {
   CheckSquareOutlined,
   CloudOutlined,
   ClockCircleOutlined,
+  LockOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
@@ -43,6 +44,12 @@ const features = [
     description: "Lihat waktu azan di lokasimu secara real-time.",
     icon: <ClockCircleOutlined className="text-4xl text-amber-500" />,
     link: "/azan-reminder",
+  },
+  {
+    title: "Passkey Auth",
+    description: "Masuk ke aplikasi dengan metode autentikasi modern.",
+    icon: <LockOutlined className="text-4xl text-purple-500" />,
+    link: "/passkey",
   },
 ];
 
