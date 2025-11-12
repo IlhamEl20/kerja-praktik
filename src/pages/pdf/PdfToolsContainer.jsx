@@ -51,7 +51,9 @@ export default function PdfToolsContainer() {
           <p className="font-semibold">
             💚 100% Aman — Data Anda tidak disimpan.
           </p>
-          <p className="text-sm mt-1">Setiap 1 kali digunakan = 1 amal 🌱</p>
+          <p className="text-sm mt-1">
+            Semoga setiap pemakaian menjadi ladang amal jariyah 🌸
+          </p>
         </div>
 
         <Tabs
