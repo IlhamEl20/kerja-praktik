@@ -13,37 +13,22 @@ import AzanReminderUI from "./pages/azan/AzanReminderUI";
 import HomePasskey from "./pages/passkey/home";
 import PdfToolsContainer from "./pages/pdf/PdfToolsContainer";
 import WeatherApp from "./pages/WeatherPage";
+import formbricks from "@formbricks/js";
+import KotakSaran from "./pages/FormBrik";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   return isAuthenticated ? children : <Navigate to="/" />;
 }
-// const environmentId = import.meta.env.VITE_FORMBRICKS_ENVIRONMENT_ID;
-// const apiHost = import.meta.env.VITE_FORMBRICKS_API_HOST;
-// if (typeof window !== "undefined") {
-//   formbricks.setup({
-//     environmentId: environmentId,
-//     appUrl: apiHost,
-//   });
-// }
+const environmentId = import.meta.env.VITE_FORMBRICKS_ENVIRONMENT_ID;
+const apiHost = import.meta.env.VITE_FORMBRICKS_API_HOST;
+if (typeof window !== "undefined") {
+  formbricks.setup({
+    environmentId: environmentId,
+    appUrl: apiHost,
+  });
+}
 export default function App() {
-  // useEffect(() => {
-  //   async function initFormbricks() {
-  //     try {
-  //       await formbricks.setup({
-  //         environmentId: "cmgtl4n7k000ar701ugmi28ps",
-  //         appUrl: "https://formbricks.ilhamboy.site?formbricksDebug=true",
-  //       });
-
-  //       console.log("✅ Formbricks initialized successfully");
-  //     } catch (error) {
-  //       console.error("❌ Failed to initialize Formbricks:", error);
-  //     }
-  //   }
-
-  //   initFormbricks();
-  // }, []);
-
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -65,6 +50,7 @@ export default function App() {
       <Route path="/pdf" element={<PdfToolsContainer />} />
       <Route path="/azan-reminder" element={<AzanReminderUI />} />
       <Route path="/passkey" element={<HomePasskey />} />
+      <Route path="/kotak-saran" element={<KotakSaran />} />
     </Routes>
   );
 }
