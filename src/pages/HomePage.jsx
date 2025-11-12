@@ -8,6 +8,7 @@ import {
   CloudOutlined,
   ClockCircleOutlined,
   LockOutlined,
+  CommentOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
@@ -50,6 +51,12 @@ const features = [
     description: "Ambil foto seru dengan efek menarik langsung dari browser!",
     icon: <CameraOutlined className="text-4xl text-pink-500" />,
     link: "/photobooth",
+  },
+  {
+    title: "Kotak Saran",
+    description: "Berikan masukanmu melalui kotak saran interaktif.",
+    icon: <CommentOutlined className="text-4xl text-teal-500" />,
+    link: "/kotak-saran",
   },
 ];
 
