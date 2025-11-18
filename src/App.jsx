@@ -15,6 +15,7 @@ import PdfToolsContainer from "./pages/pdf/PdfToolsContainer";
 import WeatherApp from "./pages/WeatherPage";
 import formbricks from "@formbricks/js";
 import KotakSaran from "./pages/FormBrik";
+import TwoFADemo from "./pages/2fa/2fa-google";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -51,6 +52,7 @@ export default function App() {
       <Route path="/azan-reminder" element={<AzanReminderUI />} />
       <Route path="/passkey" element={<HomePasskey />} />
       <Route path="/kotak-saran" element={<KotakSaran />} />
+      <Route path="/2fa-google" element={<TwoFADemo />} />
     </Routes>
   );
 }

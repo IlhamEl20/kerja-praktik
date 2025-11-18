@@ -9,6 +9,8 @@ import {
   ClockCircleOutlined,
   LockOutlined,
   CommentOutlined,
+  GoogleCircleFilled,
+  GoogleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
@@ -40,6 +42,12 @@ const features = [
     link: "/passkey",
   },
   {
+    title: "2FA Google Authenticator",
+    description: "-",
+    icon: <GoogleOutlined className="text-4xl text-indigo-500" />,
+    link: "/2fa-google",
+  },
+  {
     title: "Weather App",
     description:
       "Cek cuaca terkini di daerahmu, lengkap dengan animasi interaktif.",
@@ -52,6 +60,7 @@ const features = [
     icon: <CameraOutlined className="text-4xl text-pink-500" />,
     link: "/photobooth",
   },
+
   {
     title: "Kotak Saran",
     description: "Berikan masukanmu melalui kotak saran interaktif.",
