@@ -18,7 +18,7 @@ export default function TwoFADemo() {
 
       if (data.already_setup) {
         setQrUrl(null);
-        setStep("verify");
+        setStep("login");
         return;
       }
 
